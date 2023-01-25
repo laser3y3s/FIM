@@ -1,3 +1,0 @@
-/home/kali/fim-files/Environment Data.txt|c8b4edf49bdde83ed2c6d76ac0c11643aa8c2c140e97f05515ec3775dd05e6fc
-/home/kali/fim-files/Business Objectives.txt|a1d3188ce2bc3f00b54ab6fcc235c3ad4b02ea4d40b8341f46b8c849fb8dfe21
-/home/kali/fim-files/Kali Configuration.txt|5f3931a3176e34af7ee760375bfd10c26f9a4a95d58439057c38e68dee8acc78
