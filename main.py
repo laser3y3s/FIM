@@ -1,15 +1,59 @@
 import hashlib
 import os
 import time
+import sys
+
 
 file_path = "/home/kali/test.txt"
+
+def ifFileExistsChecker(file_to_check):
+	match file_to_check:
+		case "baseline":
+			if os.path.isfile(baseline_file_path):
+				return True
+			else:
+				print ("Baseline.txt file does not exist \n")
+				user_input = input ("Would you like to create one? Enter y to create and n to exit script ? \n")
+				if user_input.lower() == "y":
+					add_baseline()
+					user_exection()
+				else:
+					print ("Script Exited") 
+				sys.exit()
+		case "global_variables":
+			print ("The global_variables.py file does not exist. Please download it from our GitHub Repo and place it in the same directory as main.py")
+			sys.exit()
+
+try:
+	from global_variables import *
+except:
+	ifFileExistsChecker("global_variables")
+else:
+	True
+
+def create_baseline(file_names):
+	print ("File names --->", file_names)
+	# baseline_path = "/home/kali/fim-tool/baseline.txt"
+	f = open(baseline_file_path, "w")
+	f.write("")
+	f.close()
+	for file in file_names:
+		baseline_file = open(baseline_file_path, "a")
+		baseline_file.write(file+"|"+hash_calc(file)+"\n")
+		baseline_file.close()
+
+def add_baseline():
+	file_names = get_filenames(monitoring_files_folder_path)
+	create_baseline(file_names)
+	print ("New Baseline.txt is Created \n")
+
+
 def hash_calc(file_path):
 	sha256_hash = hashlib.sha256()
 	with open(file_path, "rb") as f:
 		# hash the file in blocks of 4K bits; effective in handling large files 
 		for byte_block in iter(lambda: f.read(4096), b""):
 			sha256_hash.update(byte_block)
-		#print (sha256_hash.hexdigest())
 		return sha256_hash.hexdigest()
 
 def get_filenames(file_path):
@@ -18,20 +62,9 @@ def get_filenames(file_path):
 	return (files)
 	#print(*files, sep="\n")
 
-def create_baseline(file_names):
-	print ("File names --->", file_names)
-	baseline_path = "/home/kali/fim-tool/baseline.txt"
-	f = open(baseline_path, "w")
-	f.write("")
-	f.close()
-	for file in file_names:
-		baseline_file = open(baseline_path, "a")
-		baseline_file.write(file+"|"+hash_calc(file)+"\n")
-		baseline_file.close()
-
 def read_baseline():
 	fileHashDictionary = {}
-	with open("baseline.txt","r") as f:
+	with open(baseline_file_path,"r") as f:
 		for line in f:
 			print("line -->", line)
 			# split baseline.txt into key and value and store them in a dictionary
@@ -43,7 +76,7 @@ def read_baseline():
 
 def calcLatestFileHashes():
 	newHashDictionary = {}
-	files = get_filenames("/home/kali/fim-files")
+	files = get_filenames(monitoring_files_folder_path)
 	for file in files:
 		newHashDictionary[file] = hash_calc(file)
 	return newHashDictionary
@@ -63,28 +96,38 @@ def checkAgainstBaseline(baselineDictionary):
 		if missing_keys:
 			print ("File Edited ----->", missing_keys)
 
+def user_exection():
+	print ("\n")
+	print ("What would you like to do? Enter A or B")
+	print ("(A) Collect new baseline!")
+	print ("(B) Begin monitoring files with saved baseline?")
+	print ("Press Ctrl+C to exit")
 
+	user_input = input()
 
-#hash_calc("/home/kali/test.txt")
+	if (user_input.lower() == "a"):
+		if ifFileExistsChecker("baseline"):
+			print ("A baseline.txt file already exist. Would you like to replace it? \n")
+			user_input = input ("Enter y to proceed or press an other key to go back to Home menu \n")
+			if user_input.lower() == "y":
+				add_baseline()
+			else:
+				user_exection()
+		
 
-print ("What would you like to do? Enter A or B")
-print ("(A) Collect new baseline!")
-print ("(B) Begin monitoring files with saved baseline?")
+	elif (user_input.lower() == "b"):
 
-user_input = input()
+		ifFileExistsChecker("baseline")
+		print ("Begin monitoring")
+		baselineDictionary = read_baseline()
+		checkAgainstBaseline(baselineDictionary)
 
-if (user_input.lower() == "a"):
-
-	file_names = get_filenames("/home/kali/fim-files")
-	create_baseline(file_names)
-	print ("New Baseline is Created")
-
-elif (user_input.lower() == "b"):
-
-	print ("Begin monitoring")
-	baselineDictionary = read_baseline()
-	checkAgainstBaseline(baselineDictionary)
-
+try:
+	sys.argv[1] == "22"
+except:
+	user_exection()
+else:
+	print ("Cron job execution") 
 
 
 # Reference
