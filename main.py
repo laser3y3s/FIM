@@ -1,6 +1,6 @@
 import hashlib
 import os
-import time
+from time import time, ctime, sleep
 import sys
 
 
@@ -12,17 +12,17 @@ def ifFileExistsChecker(file_to_check):
 			if os.path.isfile(baseline_file_path):
 				return True
 			else:
-				print ("Baseline.txt file does not exist \n")
-				user_input = input ("Would you like to create one? Enter y to create and n to exit script ? \n")
-				if user_input.lower() == "y":
-					add_baseline()
-					user_exection()
-				else:
-					print ("Script Exited") 
-				sys.exit()
+				return False
+
 		case "global_variables":
 			print ("The global_variables.py file does not exist. Please download it from our GitHub Repo and place it in the same directory as main.py")
 			sys.exit()
+
+		case "log_file":
+			if os.path.isfile(log_file_path):
+				return True
+			else:
+				return False
 
 try:
 	from global_variables import *
@@ -85,7 +85,7 @@ def calcLatestFileHashes():
 def checkAgainstBaseline(baselineDictionary):
 	while True:
 		newHashDictionary = calcLatestFileHashes()
-		time.sleep(1)
+		sleep(1)
 		if (set(baselineDictionary.keys()) - set(newHashDictionary.keys()) != set()):
 			missing_keys = set(baselineDictionary.keys()) - set(newHashDictionary.keys())
 			print ("Deleted Files ----> ", missing_keys)
@@ -95,6 +95,10 @@ def checkAgainstBaseline(baselineDictionary):
 		missing_keys = [key for key in baselineDictionary if baselineDictionary[key] != newHashDictionary[key]]
 		if missing_keys:
 			print ("File Edited ----->", missing_keys)
+
+def start_monitoring():
+	baselineDictionary = read_baseline()
+	checkAgainstBaseline(baselineDictionary)
 
 def user_exection():
 	print ("\n")
@@ -113,21 +117,51 @@ def user_exection():
 				add_baseline()
 			else:
 				user_exection()
+		else:
+			print ("Baseline.txt file does not exist \n")
+			user_input = input ("Would you like to create one? Enter y to create and n to exit script ? \n")
+			if user_input.lower() == "y":
+				add_baseline()
+				user_exection()
+			else:
+				print ("Script Exited") 
+			sys.exit()
+
 		
-
 	elif (user_input.lower() == "b"):
-
-		ifFileExistsChecker("baseline")
+		if ifFileExistsChecker("baseline") == False:
+			print ("Baseline.txt file does not exist \n")
+			user_input = input ("Would you like to create one? Enter y to create and n to exit script ? \n")
+			if user_input.lower() == "y":
+				add_baseline()
+				user_exection()
 		print ("Begin monitoring")
-		baselineDictionary = read_baseline()
-		checkAgainstBaseline(baselineDictionary)
+		start_monitoring()
+
+def cron_execution():
+	if ifFileExistsChecker("baseline") == False:
+		f = open(log_file_path, "a")
+		f.write(ctime(time()) + " : Baseline file does not exist! Please create one by running the script in terminal \n")
+		f.close()
+		sys.exit()
+
+	f = open(log_file_path, "a")
+	f.write(ctime(time()) + " : Monitoring Started! Well, not really .... \n")
+	f.close()
+	# start_monitoring()   if I uncomment this function the monitoring will run in the background
 
 try:
 	sys.argv[1] == "22"
 except:
 	user_exection()
 else:
-	print ("Cron job execution") 
+	print ("Cron job execution")
+	cron_execution()
+	# f = open("/home/kali/fim-tool/main_logg.txt", "w")
+	# f.write("Cron job is successful")
+	# f.close()
+	
+
 
 
 # Reference
