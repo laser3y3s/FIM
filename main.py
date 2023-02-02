@@ -1,10 +1,20 @@
 import hashlib
 import os
 from time import time, ctime, sleep
+import stat
 import sys
 
 
-file_path = "/home/kali/test.txt"
+# file_path = "/home/kali/test.txt"
+
+def check_file_privileges(file_paths):
+	print ("Enteres check_file_privileges!!")
+	for file_path in file_paths:
+	    st = os.stat(file_path)
+	    if (st.st_mode & (stat.S_IRWXG + stat.S_IRWXO)) != 0:
+	    	return False
+	print ("Return TRUE!!")
+	return True 					# returns TRUE if neither the 'group' nor 'others' of the file have any permissions
 
 def ifFileExistsChecker(file_to_check):
 	match file_to_check:
@@ -101,6 +111,10 @@ def start_monitoring():
 	checkAgainstBaseline(baselineDictionary)
 
 def user_exection():
+
+	if check_file_privileges(['./main.py', baseline_file_path, './global_variables.py']) == False:
+		print ("###############    Check the file permission of main.py, baseline.txt and global_variables.py . Make sure they have ONLY owner privileges!  ###############")
+
 	print ("\n")
 	print ("What would you like to do? Enter A or B")
 	print ("(A) Collect new baseline!")
