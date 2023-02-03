@@ -7,13 +7,16 @@ import sys
 
 # file_path = "/home/kali/test.txt"
 
+def logger(msg):
+	f = open(log_file_path, "a")
+	f.write(ctime(time()) + " : " + msg + " \n")
+	f.close()
+
 def check_file_privileges(file_paths):
-	print ("Enteres check_file_privileges!!")
 	for file_path in file_paths:
 	    st = os.stat(file_path)
 	    if (st.st_mode & (stat.S_IRWXG + stat.S_IRWXO)) != 0:
 	    	return False
-	print ("Return TRUE!!")
 	return True 					# returns TRUE if neither the 'group' nor 'others' of the file have any permissions
 
 def ifFileExistsChecker(file_to_check):
@@ -25,7 +28,9 @@ def ifFileExistsChecker(file_to_check):
 				return False
 
 		case "global_variables":
-			print ("The global_variables.py file does not exist. Please download it from our GitHub Repo and place it in the same directory as main.py")
+			text_to_print = "The global_variables.py file does not exist. Please download it from our GitHub Repo and place it in the same directory as main.py"
+			print (text_to_print)
+			logger(text_to_print)
 			sys.exit()
 
 		case "log_file":
@@ -113,7 +118,9 @@ def start_monitoring():
 def user_exection():
 
 	if check_file_privileges(['./main.py', baseline_file_path, './global_variables.py']) == False:
-		print ("###############    Check the file permission of main.py, baseline.txt and global_variables.py . Make sure they have ONLY owner privileges!  ###############")
+		text_to_print = "###############    Check the file permission of main.py, baseline.txt and global_variables.py . Make sure they have ONLY owner privileges!  ###############"
+		print (text_to_print)
+		logger(text_to_print)
 
 	print ("\n")
 	print ("What would you like to do? Enter A or B")
@@ -154,13 +161,9 @@ def user_exection():
 
 def cron_execution():
 	if ifFileExistsChecker("baseline") == False:
-		f = open(log_file_path, "a")
-		f.write(ctime(time()) + " : Baseline file does not exist! Please create one by running the script in terminal \n")
-		f.close()
+		logger("Baseline file does not exist! Please create one by running the script in terminal")
 		sys.exit()
-
-	f = open(log_file_path, "a")
-	f.write(ctime(time()) + " : Monitoring Started! Well, not really .... \n")
+	logger("Monitoring Started! Well, not really ....")
 	f.close()
 	# start_monitoring()   if I uncomment this function the monitoring will run in the background
 
@@ -171,12 +174,6 @@ except:
 else:
 	print ("Cron job execution")
 	cron_execution()
-	# f = open("/home/kali/fim-tool/main_logg.txt", "w")
-	# f.write("Cron job is successful")
-	# f.close()
-	
-
-
 
 # Reference
 # https://www.quickprogrammingtips.com/python/how-to-calculate-sha256-hash-of-a-file-in-python.html
