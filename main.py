@@ -4,13 +4,39 @@ from time import time, ctime, sleep
 import stat
 import sys
 
+import logging
+from logging.handlers import SysLogHandler, RotatingFileHandler
 
-# file_path = "/home/kali/test.txt"
+def logger(msg,log_level):
 
-def logger(msg):
-	f = open(log_file_path, "a")
-	f.write(ctime(time()) + " : " + msg + " \n")
-	f.close()
+	# Log levels are: CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
+
+	logger = logging.getLogger()
+	logger.setLevel(logging.INFO)
+
+	logFormatter = logging.Formatter("%(asctime)s :: %(levelname)s :: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+
+	sysloghandler = SysLogHandler(address=(syslog_server_ip,syslog_server_port))
+	sysloghandler.setFormatter(logFormatter)
+
+	fileHandler = RotatingFileHandler(log_file_path)
+	fileHandler.setFormatter(logFormatter)
+
+	logger.addHandler(sysloghandler)
+	logger.addHandler(fileHandler)
+
+	match log_level:
+		case "CRITICAL":
+			logger.critical(msg)
+		case "ERROR":
+			logger.error(msgg)
+		case "WARNING":
+			logger.warning(msg)
+		case "INFO":
+			logger.info(msg)
+
+	# logger.info("This is a sample INFORMATION message")
+	# logger.warning("Sample WARNING message")
 
 def check_file_privileges(file_paths):
 	for file_path in file_paths:
@@ -30,7 +56,7 @@ def ifFileExistsChecker(file_to_check):
 		case "global_variables":
 			text_to_print = "The global_variables.py file does not exist. Please download it from our GitHub Repo and place it in the same directory as main.py"
 			print (text_to_print)
-			logger(text_to_print)
+			logger(text_to_print,"INFO")
 			sys.exit()
 
 		case "log_file":
@@ -119,8 +145,7 @@ def user_exection():
 
 	if check_file_privileges(['./main.py', baseline_file_path, './global_variables.py']) == False:
 		text_to_print = "###############    Check the file permission of main.py, baseline.txt and global_variables.py . Make sure they have ONLY owner privileges!  ###############"
-		print (text_to_print)
-		logger(text_to_print)
+		logger(text_to_print,"CRITICAL")
 
 	print ("\n")
 	print ("What would you like to do? Enter A or B")
@@ -161,9 +186,9 @@ def user_exection():
 
 def cron_execution():
 	if ifFileExistsChecker("baseline") == False:
-		logger("Baseline file does not exist! Please create one by running the script in terminal")
+		logger("Baseline file does not exist! Please create one by running the script in terminal","INFO")
 		sys.exit()
-	logger("Monitoring Started! Well, not really ....")
+	logger("Monitoring Started! Well, not really ....","INFO")
 	f.close()
 	# start_monitoring()   if I uncomment this function the monitoring will run in the background
 
